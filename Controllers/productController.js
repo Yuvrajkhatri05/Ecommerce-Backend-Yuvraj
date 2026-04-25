@@ -70,7 +70,10 @@ exports.newProductUpload = async (req, res) => {
     const variant = product.variants ? JSON.parse(product.variants) : [];
 
     // Cloudinary URLs
-    const imagePaths = req.files?.map(file => file.path);
+    const mainImage = req.files.mainImage?.[0];
+    const images = req.files.images || [];
+    const mainImageUrl = mainImage?.path;
+    const imageUrls = images.map(file => file.path);
 
     const newProduct = await Product.create({
       productType: product.productType,
@@ -86,8 +89,8 @@ exports.newProductUpload = async (req, res) => {
       discount: product.discount,
       discountPrice: product.discountPrice,
       productsize: product.productsize,
-      mainImage: imagePaths?.[0], // first image
-      images: imagePaths, // all images
+      mainImage: mainImageUrl, // first image
+      images: imageUrls, // all images
       availableProduct: product.availableProduct,
       seller: req.seller?._id,
       variants: variant,

@@ -5,7 +5,7 @@ const userSchema = new Schema({
     fullName: String,
     password: String,
     mobileNo: String,
-    email:{
+    email: {
         type: String,
         unique: true,
     },
@@ -25,7 +25,7 @@ const userSchema = new Schema({
     cart: [
         {
             product: {
-                type:mongoose.Schema.Types.ObjectId,
+                type: mongoose.Schema.Types.ObjectId,
                 ref: "product"
             },
             quantity: {
@@ -57,15 +57,15 @@ const userSchema = new Schema({
     },
     myOrders: [
         {
-            type:mongoose.Schema.Types.ObjectId,
+            type: mongoose.Schema.Types.ObjectId,
             ref: "order",
         }
     ]
-},{timestamps: true}
+}, { timestamps: true }
 );
 userSchema.pre("save", async function () {
     const user = this;
-    if(!user.isModified("password")) return;
+    if (!user.isModified("password")) return;
     const hashed = await bcrypt.hash(user.password, 10);
     this.password = hashed;
 });

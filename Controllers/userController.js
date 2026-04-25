@@ -1,14 +1,14 @@
 const User = require("../Models/User");
 
 // VERIFY CONTROLLER
-exports.userVerify = async(req, res) => {
+exports.userVerify = async (req, res) => {
   if (!req.user || !req.cookies.token) {
     return res.json({ loggedIn: false });
   }
   const user = await User.findById(req.user._id).populate([
-    {path: 'cart.product', populate: {path: 'seller', select: 'firmName'}},
-    {path: 'currentOrderObj.items.product', populate: {path: 'seller', select: 'firmName'}},
-    {path: 'myOrders.order'}
+    { path: 'cart.product', populate: { path: 'seller', select: 'firmName' } },
+    { path: 'currentOrderObj.items.product', populate: { path: 'seller', select: 'firmName' } },
+    { path: 'myOrders.order' }
   ]).lean();
   res.json({
     loggedIn: true,
@@ -18,7 +18,7 @@ exports.userVerify = async(req, res) => {
 
 // ADD ADDRESS CONTROLLER
 exports.addAddress = async (req, res) => {
-  try{
+  try {
     const user = req.user;
     const address = req.body;
     user.address.push({
@@ -29,22 +29,22 @@ exports.addAddress = async (req, res) => {
       state: address.state
     });
     await user.save();
-    res.status(200).json({ success: true, message: "Address Added successfully"});
-  } catch(error) {
+    res.status(200).json({ success: true, message: "Address Added successfully" });
+  } catch (error) {
     console.error("Add Address Error:", error);
     res.status(500).json({ success: false, error: error.message });
   }
 }
 // DELETE ADDRESS CONTROLLER
 exports.deleteAddress = async (req, res) => {
-  try{
+  try {
     const user = req.user;
     const { id } = req.params;
     user.address = user.address.filter(
-      item => item._id.toString() !== addressId
+      item => item._id.toString() !== id
     );
     await user.save();
-    res.status(200).json({ success: true, message: "Address removed", cart: user.cart});
+    res.status(200).json({ success: true, message: "Address removed", cart: user.cart });
   } catch (error) {
     res.status(500).json({ success: false, error: error.message });
   }
@@ -54,7 +54,7 @@ exports.deleteAddress = async (req, res) => {
 exports.getCart = async (req, res) => {
   try {
     const user = await User.findById(req.user._id)
-        .populate({path: 'cart.product', populate: {path: 'seller', select: 'firmName'}}).lean();
+      .populate({ path: 'cart.product', populate: { path: 'seller', select: 'firmName' } }).lean();
     if (!user) {
       return res.status(404).json({ success: false, message: "User not found" });
     }
@@ -65,17 +65,17 @@ exports.getCart = async (req, res) => {
 }
 // REMOVE CART CONTROLLER
 exports.removeCartProduct = async (req, res) => {
-    try{
-        const user = req.user;
-        const { productId } = req.params;
-        user.cart = user.cart.filter(
-          item => item.product.toString() !== productId
-        );
-        await user.save();
-        res.status(200).json({ success: true, message: "Product removed from cart"});
-    } catch (error) {
-        res.status(500).json({ success: false, error: error.message });
-    }
+  try {
+    const user = req.user;
+    const { productId } = req.params;
+    user.cart = user.cart.filter(
+      item => item.product.toString() !== productId
+    );
+    await user.save();
+    res.status(200).json({ success: true, message: "Product removed from cart" });
+  } catch (error) {
+    res.status(500).json({ success: false, error: error.message });
+  }
 }
 
 // ADDFORORDER CONTROLLER
@@ -111,7 +111,7 @@ exports.checkoutProduct = async (req, res) => {
   try {
     const user = await User.findById(req.user._id)
       .select("currentOrderObj")
-      .populate({path: "currentOrderObj.items.product", populate: {path: 'seller', select: 'firmName'}});
+      .populate({ path: "currentOrderObj.items.product", populate: { path: 'seller', select: 'firmName' } });
     res.status(200).json({
       success: true,
       user
@@ -138,15 +138,15 @@ exports.update = async (req, res) => {
         }
         matchQuery[`${field}._id`] = match;
         updateQuery = { $set: setData };
-      break;
+        break;
       // ADD item
       case 'add':
         updateQuery = { $push: { [field]: data } };
-      break;
+        break;
       // REMOVE item
       case 'remove':
         updateQuery = { $pull: { [field]: { _id: match } } };
-      break;
+        break;
       default:
         return res.status(400).json({ message: 'Invalid action' });
     }
@@ -171,14 +171,14 @@ exports.updateProfile = async (req, res) => {
     }
 
     const { fullName, email, mobileNo, password } = req.body;
-    
+
     if (fullName) user.fullName = fullName;
     if (email) user.email = email;
     if (mobileNo) user.mobileNo = mobileNo;
     if (password) user.password = password;
 
     await user.save(); // This triggers the pre('save') hook for password hashing
-    
+
     res.status(200).json({
       success: true,
       message: "Profile updated successfully",

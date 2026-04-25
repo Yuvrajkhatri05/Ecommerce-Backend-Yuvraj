@@ -42,6 +42,7 @@ exports.getProducts = async (req, res) => {
         if (!req.seller) {
             return res.json({ loggedIn: false });
         }
+        console.log(req.seller);
         const seller = await Seller.findById(req.seller._id).select("sellerName products").populate("products").lean();
         res.json({
             loggedIn: true,
